@@ -24,7 +24,14 @@ func (s *APIServer) Run() {
 	api := e.Group("/api/v1")
 
 	api.GET("/health-check", healthCheck)
-	service := NewService()
+
+	cfg := LoadConfig()
+	store, err := NewPostgresStore(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	service := NewService(store)
 	service.RegisterRoutes(api)
 
 	log.Fatal(e.Start(s.addr))

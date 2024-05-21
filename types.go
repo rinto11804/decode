@@ -1,23 +1,16 @@
 package main
 
-import "time"
+import (
+	"errors"
+)
 
-type User struct {
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-}
+var (
+	ErrUserNotFound = errors.New("user not found")
+)
 
-type EventInput struct {
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
-}
-
-type Event struct {
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
-	CreatedAt   time.Time `json:"created_at"`
+type CourseCreateBody struct {
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	Author      string  `json:"author"`
+	Price       float64 `json:"price"`
 }
