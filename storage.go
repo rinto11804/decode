@@ -1,47 +1,28 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"log"
+	"time"
 
-	_ "github.com/lib/pq"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type Storage interface {
-	CreateCourse(*CourseModel) error
-}
+func NewMongoDBStorage(mongoURI string) (*mongo.Client, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
 
-type PostgresStorage struct {
-	db *sql.DB
-}
-
-func NewPostgresStore(cfg *Config) (*PostgresStorage, error) {
-	db, err := sql.Open("postgres", cfg.Dsn)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		return nil, err
 	}
-	if err := db.Ping(); err != nil {
+
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		return nil, err
 	}
-	store := &PostgresStorage{
-		db: db,
-	}
-	store, err = store.Init()
-	if err != nil {
-		return nil, err
-	}
-	log.Print(store.db.Stats())
-	return store, nil
-}
+	log.Println("DB connected successfully")
 
-func (p *PostgresStorage) Init() (*PostgresStorage, error) {
-	return p, nil
-}
-
-func (p *PostgresStorage) CreateCourse(e *CourseModel) error {
-	_, err := p.db.Exec("INSERT INTO Event (title,description,author,userId,created_at) VALUES ($1,$2,$3)", e.Title, e.Description, e.Author, e.UserID, e.CreatedAt)
-	if err != nil {
-		return err
-	}
-	return nil
+	return client, err
 }
