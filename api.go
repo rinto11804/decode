@@ -1,6 +1,7 @@
 package main
 
 import (
+	"decode/room"
 	"decode/task"
 	"log"
 	"net/http"
@@ -28,6 +29,10 @@ func (s *APIServer) Run() {
 	api := e.Group("/api/v1")
 
 	api.GET("/health-check", healthCheck)
+
+	roomStore := room.NewStore(s.db)
+	roomService := room.NewService(roomStore)
+	roomService.RegisterRoutes(api)
 
 	taskStore := task.NewStore(s.db)
 	taskService := task.NewService(taskStore)
