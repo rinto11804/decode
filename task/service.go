@@ -51,6 +51,6 @@ func (s *Service) handleCreateTask(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, echo.Map{
 		"msg":     "task created successfully",
-		"task_id": id.String(),
+		"task_id": id.Hex(),
 	})
 }

@@ -23,6 +23,11 @@ const (
 	ADMIN Role = "ADMIN"
 )
 
+type User struct {
+	ID   string `json:"id"`
+	Role Role   `json:"role"`
+}
+
 type UserModel struct {
 	ID        primitive.ObjectID `bson:"_id" json:"id"`
 	Name      string             `bson:"name" json:"name"`
@@ -36,7 +41,6 @@ type RoomModel struct {
 	ID          primitive.ObjectID `bson:"_id" json:"id"`
 	Title       string             `bson:"title" json:"title"`
 	Description string             `bson:"description" json:"description"`
-	AuthorName  string             `bson:"author_name" json:"author_name"`
 	UserID      primitive.ObjectID `bson:"user_id" json:"user_id"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 }
@@ -60,7 +64,6 @@ type RoomStore interface {
 type RoomCreateReq struct {
 	Title       string             `bson:"title" json:"title"`
 	Description string             `bson:"description" json:"description"`
-	AuthorName  string             `bson:"author_name" json:"author_name"`
 	UserID      primitive.ObjectID `bson:"user_id" json:"user_id"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 }
