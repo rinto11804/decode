@@ -53,12 +53,26 @@ type TaskModel struct {
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 }
 
+type UserStore interface {
+	CreateUser(context.Context, *UserCreateReq) (primitive.ObjectID, error)
+	GetUserByID(ctx context.Context, id primitive.ObjectID) (*UserModel, error)
+	GetUserByEmail(ctx context.Context, email string) (*UserModel, error)
+}
+
 type TaskStore interface {
 	CreateTask(context.Context, *TaskCreateReq) (primitive.ObjectID, error)
 }
 
 type RoomStore interface {
 	CreateRoom(context.Context, *RoomCreateReq) (primitive.ObjectID, error)
+}
+
+type UserCreateReq struct {
+	Name      string    `bson:"name" json:"name"`
+	Email     string    `bson:"email" json:"email"`
+	Password  string    `bson:"password" json:"_"`
+	Role      Role      `bson:"role" json:"role"`
+	CreatedAt time.Time `bson:"created_at" json:"created_at"`
 }
 
 type RoomCreateReq struct {

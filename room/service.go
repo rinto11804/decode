@@ -11,7 +11,7 @@ import (
 )
 
 type Service struct {
-	store *Store
+	store types.RoomStore
 }
 
 type RoomCreateBody struct {
@@ -19,7 +19,7 @@ type RoomCreateBody struct {
 	Description string `json:"description"`
 }
 
-func NewService(store *Store) *Service {
+func NewService(store types.RoomStore) *Service {
 	return &Service{store}
 }
 
