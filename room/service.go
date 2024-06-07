@@ -19,6 +19,11 @@ type RoomCreateBody struct {
 	Description string `json:"description"`
 }
 
+type RoomCreateRes struct {
+	Msg    string `json:"msg"`
+	RoomID string `json:"room_id"`
+}
+
 func NewService(store types.RoomStore) *Service {
 	return &Service{store}
 }
