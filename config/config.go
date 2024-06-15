@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"errors"
@@ -13,6 +13,8 @@ var (
 
 type Config struct {
 	MongoDBURI string
+	Port       string
+	JwtSecret  string
 }
 
 func LoadConfig() (*Config, error) {
@@ -25,5 +27,7 @@ func LoadConfig() (*Config, error) {
 	}
 	return &Config{
 		MongoDBURI: uri,
+		Port:       ":3000",
+		JwtSecret:  "this_is_secret",
 	}, nil
 }

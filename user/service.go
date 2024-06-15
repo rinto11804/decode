@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
+	"decode/config"
 	"decode/types"
+	"decode/user/auth"
 	"decode/util"
 	"errors"
 	"net/http"
@@ -17,6 +19,7 @@ var (
 )
 
 type Service struct {
+	cfg   *config.Config
 	store types.UserStore
 }
 
@@ -26,16 +29,23 @@ type RegisterReq struct {
 	Password string `json:"password"`
 }
 
-func NewService(store types.UserStore) *Service {
-	return &Service{store}
+type LoginReq struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func NewService(store types.UserStore, config *config.Config) *Service {
+	return &Service{config, store}
 }
 
 func (s *Service) RegisterRoutes(api *echo.Group) {
-	api.POST("/register", s.Register)
+	api.POST("/register/:role", s.handleRegister)
+	api.POST("/login", s.handleLogin)
 }
 
-func (s *Service) Register(c echo.Context) error {
+func (s *Service) handleRegister(c echo.Context) error {
 	var userInput RegisterReq
+	role := util.GetRole(c.Param("role"))
 
 	if err := c.Bind(&userInput); err != nil {
 		return err
@@ -55,7 +65,7 @@ func (s *Service) Register(c echo.Context) error {
 		Name:      userInput.Name,
 		Email:     userInput.Email,
 		Password:  hash,
-		Role:      types.USER,
+		Role:      role,
 		CreatedAt: time.Now(),
 	}
 
@@ -67,5 +77,40 @@ func (s *Service) Register(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"msg":     "user created successfully",
 		"user_id": userId.Hex(),
+	})
+}
+
+func (s *Service) handleLogin(c echo.Context) error {
+	var loginInput LoginReq
+
+	if err := c.Bind(&loginInput); err != nil {
+		return err
+	}
+
+	user, err := s.store.GetUserByEmail(context.Background(), loginInput.Email)
+	if err != nil {
+		return ErrUserNotFound
+	}
+
+	if !util.IsValidPassword(loginInput.Password, user.Password) {
+		return ErrUserNotFound
+	}
+
+	token, err := auth.CreateJWTToken(s.cfg.JwtSecret, user.ID.Hex(), user.Role)
+	if err != nil {
+		return err
+	}
+
+	c.SetCookie(&http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Domain:   "localhost",
+		Secure:   true,
+		HttpOnly: false,
+	})
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": token,
+		"user":  user,
 	})
 }

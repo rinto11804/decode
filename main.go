@@ -1,21 +1,21 @@
 package main
 
 import (
+	"decode/config"
 	"log"
 )
 
 func main() {
-	config, err := LoadConfig()
+	config, err := config.LoadConfig()
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	db, err := NewMongoDBStorage(config.MongoDBURI)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	server := NewAPIServer(":3000", db)
+	server := NewAPIServer(config, db)
 	server.Run()
 }

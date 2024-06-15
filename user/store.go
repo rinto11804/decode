@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var collName = "user"
@@ -16,6 +17,13 @@ type Store struct {
 }
 
 func NewStore(db *mongo.Client) *Store {
+	db.Database(types.DBName).Collection(collName).Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys:    bson.E{Key: "email", Value: 1},
+			Options: options.Index().SetUnique(true),
+		},
+	)
 	return &Store{db}
 }
 

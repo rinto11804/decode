@@ -16,7 +16,7 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-type Role = string
+type Role string
 
 const (
 	USER  Role = "USER"
@@ -32,7 +32,7 @@ type UserModel struct {
 	ID        primitive.ObjectID `bson:"_id" json:"id"`
 	Name      string             `bson:"name" json:"name"`
 	Email     string             `bson:"email" json:"email"`
-	Password  string             `bson:"password" json:"_"`
+	Password  string             `bson:"password" json:"-"`
 	Role      Role               `bson:"role" json:"role"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 }
