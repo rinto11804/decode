@@ -46,10 +46,14 @@ func (s *Store) GetUserByEmail(ctx context.Context, email string) (*types.UserMo
 	return user, nil
 }
 
-func (s *Store) GetUserByID(ctx context.Context, id primitive.ObjectID) (*types.UserModel, error) {
+func (s *Store) GetUserByID(ctx context.Context, id string) (*types.UserModel, error) {
 	var user *types.UserModel
 	coll := s.db.Database(types.DBName).Collection(collName)
-	res := coll.FindOne(ctx, bson.M{"_id": id})
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	res := coll.FindOne(ctx, bson.M{"_id": ID})
 	if err := res.Decode(&user); err != nil {
 		return nil, err
 	}

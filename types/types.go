@@ -55,7 +55,7 @@ type TaskModel struct {
 
 type UserStore interface {
 	CreateUser(context.Context, *UserCreateReq) (primitive.ObjectID, error)
-	GetUserByID(ctx context.Context, id primitive.ObjectID) (*UserModel, error)
+	GetUserByID(ctx context.Context, id string) (*UserModel, error)
 	GetUserByEmail(ctx context.Context, email string) (*UserModel, error)
 }
 

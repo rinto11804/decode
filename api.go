@@ -38,7 +38,9 @@ func (s *APIServer) Run() {
 	userService := user.NewService(userStore, s.config)
 	userService.RegisterRoutes(api)
 
-	protected := api.Group("/decode", auth.AuthMiddleware)
+	authService := auth.NewService(s.config, userStore)
+
+	protected := api.Group("/decode", authService.AuthMiddleware)
 
 	roomStore := room.NewStore(s.db)
 	roomService := room.NewService(roomStore)

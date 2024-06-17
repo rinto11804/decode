@@ -4,12 +4,12 @@ import (
 	"context"
 	"decode/config"
 	"decode/types"
-	"decode/user/auth"
 	"decode/util"
 	"errors"
 	"net/http"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -96,7 +96,7 @@ func (s *Service) handleLogin(c echo.Context) error {
 		return ErrUserNotFound
 	}
 
-	token, err := auth.CreateJWTToken(s.cfg.JwtSecret, user.ID.Hex(), user.Role)
+	token, err := s.CreateJWTToken(user.ID.Hex(), user.Role)
 	if err != nil {
 		return err
 	}
@@ -113,4 +113,15 @@ func (s *Service) handleLogin(c echo.Context) error {
 		"token": token,
 		"user":  user,
 	})
+}
+func (s Service) CreateJWTToken(id string, role types.Role) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": id,
+		"iss": "decode",
+		"aud": role,
+		"exp": time.Now().Add(time.Hour).Unix(),
+		"iat": time.Now().Unix(),
+	})
+
+	return token.SignedString([]byte(s.cfg.JwtSecret))
 }
