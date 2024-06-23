@@ -11,7 +11,7 @@ func GetRole(role string) types.Role {
 	if role == "admin" {
 		return types.ADMIN
 	}
-	return types.USER
+	return types.GUEST
 }
 
 func SentErrResponse(c echo.Context, statusCode int, err error) error {

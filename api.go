@@ -4,9 +4,9 @@ import (
 	"decode/config"
 	"decode/room"
 	"decode/task"
+	"decode/task/answer"
 	"decode/user"
 	"decode/user/auth"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -26,13 +26,13 @@ func NewAPIServer(config *config.Config, db *mongo.Client) *APIServer {
 	}
 }
 
-func (s *APIServer) Run() {
+func (s *APIServer) Run() error {
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.Logger())
 	api := e.Group("/api/v1")
 
-	api.GET("/health-check", healthCheck)
+	api.GET("/healthcheck", healthCheck)
 
 	userStore := user.NewStore(s.db)
 	userService := user.NewService(userStore, s.config)
@@ -50,8 +50,14 @@ func (s *APIServer) Run() {
 	taskService := task.NewService(taskStore)
 	taskService.RegisterRoutes(protected)
 
-	log.Println(s.config.Port)
-	log.Fatal(e.Start(s.config.Port))
+	answerStore := answer.NewStore(s.db)
+	answerService := answer.NewService(answerStore)
+	answerService.RegisterRoutes(protected)
+
+	if err := e.Start(s.config.Port); err != nil {
+		return err
+	}
+	return nil
 }
 
 func healthCheck(c echo.Context) error {

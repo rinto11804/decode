@@ -33,11 +33,11 @@ func (s *Service) RegisterRoutes(api *echo.Group) {
 }
 
 func (s *Service) handleCreateRoom(c echo.Context) error {
-	// user := c.Get("user").(types.User)
-	// userID, err := primitive.ObjectIDFromHex(user.ID)
-	// if err != nil {
-	// 	return err
-	// }
+	user := c.Get("user").(types.User)
+	userID, err := primitive.ObjectIDFromHex(user.ID)
+	if err != nil {
+		return err
+	}
 
 	var roomInput RoomCreateBody
 	if err := c.Bind(&roomInput); err != nil {
@@ -47,7 +47,7 @@ func (s *Service) handleCreateRoom(c echo.Context) error {
 	room := &types.RoomCreateReq{
 		Title:       roomInput.Title,
 		Description: roomInput.Description,
-		UserID:      primitive.NewObjectID(),
+		UserID:      userID,
 		CreatedAt:   time.Now(),
 	}
 

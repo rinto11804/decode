@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
@@ -23,6 +22,8 @@ type Service struct {
 type taskCreateBody struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Body        string `json:"body"`
+	RoomID      string `json:"room_id"`
 }
 
 func NewService(store types.TaskStore) *Service {
@@ -38,12 +39,20 @@ func (s *Service) handleCreateTask(c echo.Context) error {
 	if err := c.Bind(&taskInput); err != nil {
 		return err
 	}
+
+	room, err := s.roomStore.GetRoomByID(context.Background(), taskInput.RoomID)
+	if err != nil {
+		return err
+	}
+
 	task := &types.TaskCreateReq{
 		Title:       taskInput.Title,
 		Description: taskInput.Description,
-		RoomID:      primitive.NewObjectID(),
+		Body:        taskInput.Body,
+		RoomID:      room.ID,
 		CreatedAt:   time.Now(),
 	}
+
 	id, err := s.store.CreateTask(context.Background(), task)
 	if err != nil {
 		return err

@@ -17,5 +17,7 @@ func main() {
 	}
 
 	server := NewAPIServer(config, db)
-	server.Run()
+	if err := server.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
