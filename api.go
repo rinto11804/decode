@@ -41,13 +41,14 @@ func (s *APIServer) Run() error {
 	authService := auth.NewService(s.config, userStore)
 
 	protected := api.Group("/decode", authService.AuthMiddleware)
+	protected.GET("/authstatus", authCheck)
 
 	roomStore := room.NewStore(s.db)
 	roomService := room.NewService(roomStore)
 	roomService.RegisterRoutes(protected)
 
 	taskStore := task.NewStore(s.db)
-	taskService := task.NewService(taskStore)
+	taskService := task.NewService(taskStore, roomStore)
 	taskService.RegisterRoutes(protected)
 
 	answerStore := answer.NewStore(s.db)
@@ -63,5 +64,11 @@ func (s *APIServer) Run() error {
 func healthCheck(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"Server status": "Still alive",
+	})
+}
+
+func authCheck(c echo.Context) error {
+	return c.JSON(http.StatusOK, echo.Map{
+		"auth": "user auth success",
 	})
 }

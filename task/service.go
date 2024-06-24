@@ -22,12 +22,13 @@ type Service struct {
 type taskCreateBody struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Handler     string `json:"handler"`
 	Body        string `json:"body"`
 	RoomID      string `json:"room_id"`
 }
 
-func NewService(store types.TaskStore) *Service {
-	return &Service{store: store}
+func NewService(store types.TaskStore, roomSore types.RoomStore) *Service {
+	return &Service{store, roomSore}
 }
 
 func (s *Service) RegisterRoutes(group *echo.Group) {
@@ -48,6 +49,7 @@ func (s *Service) handleCreateTask(c echo.Context) error {
 	task := &types.TaskCreateReq{
 		Title:       taskInput.Title,
 		Description: taskInput.Description,
+		Handler:     taskInput.Handler,
 		Body:        taskInput.Body,
 		RoomID:      room.ID,
 		CreatedAt:   time.Now(),

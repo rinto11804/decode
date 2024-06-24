@@ -43,7 +43,7 @@ func (s Service) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return echo.ErrUnauthorized
 		}
-		c.Set("user", user)
+		c.Set("user", types.User{ID: user.ID.Hex(), Role: user.Role})
 		return next(c)
 	}
 }
