@@ -12,20 +12,32 @@ import (
 var collName = "room"
 
 type Store struct {
-	db *mongo.Client
+	db *mongo.Database
 }
 
 func NewStore(db *mongo.Client) *Store {
-	return &Store{db}
+	return &Store{db: db.Database(types.DBName)}
 }
 
 func (s *Store) CreateRoom(ctx context.Context, room *types.RoomCreateReq) (primitive.ObjectID, error) {
-	res, err := s.db.Database(types.DBName).Collection(collName).InsertOne(ctx, room)
+	res, err := s.db.Collection(collName).InsertOne(ctx, room)
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
 
 	return res.InsertedID.(primitive.ObjectID), nil
+}
+
+func (s *Store) GetAllRoomByUserID(ctx context.Context, userID primitive.ObjectID) ([]types.RoomModel, error) {
+	var rooms []types.RoomModel
+	couser, err := s.db.Collection(collName).Find(ctx, bson.M{"user_id": userID})
+	if err != nil {
+		return nil, err
+	}
+	if err := couser.All(ctx, &rooms); err != nil {
+		return nil, err
+	}
+	return rooms, nil
 }
 
 func (s *Store) GetRoomByID(ctx context.Context, id string) (*types.RoomModel, error) {
@@ -35,7 +47,7 @@ func (s *Store) GetRoomByID(ctx context.Context, id string) (*types.RoomModel, e
 		return nil, err
 	}
 
-	res := s.db.Database(types.DBName).Collection(collName).FindOne(ctx, bson.M{"_id": roomID})
+	res := s.db.Collection(collName).FindOne(ctx, bson.M{"_id": roomID})
 	if err := res.Decode(&room); err != nil {
 		return nil, err
 	}

@@ -104,8 +104,9 @@ func (s *Service) handleLogin(c echo.Context) error {
 	c.SetCookie(&http.Cookie{
 		Name:     "token",
 		Value:    token,
+		Path:     "/",
 		Domain:   "localhost",
-		Secure:   true,
+		Secure:   false,
 		HttpOnly: false,
 	})
 

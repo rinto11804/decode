@@ -13,22 +13,23 @@ import (
 var collName = "user"
 
 type Store struct {
-	db *mongo.Client
+	db *mongo.Database
 }
 
-func NewStore(db *mongo.Client) *Store {
-	db.Database(types.DBName).Collection(collName).Indexes().CreateOne(
+func NewStore(client *mongo.Client) *Store {
+	client.Database(types.DBName).Collection(collName).Indexes().CreateOne(
 		context.Background(),
 		mongo.IndexModel{
 			Keys:    bson.E{Key: "email", Value: 1},
 			Options: options.Index().SetUnique(true),
 		},
 	)
-	return &Store{db}
+
+	return &Store{db: client.Database(types.DBName)}
 }
 
 func (s *Store) CreateUser(ctx context.Context, user *types.UserCreateReq) (primitive.ObjectID, error) {
-	coll := s.db.Database(types.DBName).Collection(collName)
+	coll := s.db.Collection(collName)
 	res, err := coll.InsertOne(ctx, user)
 	if err != nil {
 		return primitive.NilObjectID, err
@@ -38,7 +39,7 @@ func (s *Store) CreateUser(ctx context.Context, user *types.UserCreateReq) (prim
 
 func (s *Store) GetUserByEmail(ctx context.Context, email string) (*types.UserModel, error) {
 	var user *types.UserModel
-	coll := s.db.Database(types.DBName).Collection(collName)
+	coll := s.db.Collection(collName)
 	res := coll.FindOne(ctx, bson.M{"email": email})
 	if err := res.Decode(&user); err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func (s *Store) GetUserByEmail(ctx context.Context, email string) (*types.UserMo
 
 func (s *Store) GetUserByID(ctx context.Context, id string) (*types.UserModel, error) {
 	var user *types.UserModel
-	coll := s.db.Database(types.DBName).Collection(collName)
+	coll := s.db.Collection(collName)
 	ID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err

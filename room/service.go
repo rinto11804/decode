@@ -30,6 +30,7 @@ func NewService(store types.RoomStore) *Service {
 
 func (s *Service) RegisterRoutes(api *echo.Group) {
 	api.POST("/room", s.handleCreateRoom)
+	api.GET("/room", s.handleGetAllRoomsByUserID)
 }
 
 func (s *Service) handleCreateRoom(c echo.Context) error {
@@ -59,5 +60,23 @@ func (s *Service) handleCreateRoom(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"msg":     "room created successfully",
 		"room_id": roomID.Hex(),
+	})
+}
+
+func (s *Service) handleGetAllRoomsByUserID(c echo.Context) error {
+	user := c.Get("user").(types.User)
+	userID, err := primitive.ObjectIDFromHex(user.ID)
+	if err != nil {
+		return err
+	}
+
+	rooms, err := s.store.GetAllRoomByUserID(context.Background(), userID)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"msg":   "fetch process successfull",
+		"rooms": rooms,
 	})
 }

@@ -11,7 +11,8 @@ import (
 )
 
 type Service struct {
-	store types.AnswerStore
+	store     types.AnswerStore
+	taskStore types.TaskStore
 }
 
 type AnswerCreateBody struct {
@@ -19,8 +20,8 @@ type AnswerCreateBody struct {
 	TaskID string `json:"task_id"`
 }
 
-func NewService(store types.AnswerStore) *Service {
-	return &Service{store}
+func NewService(store types.AnswerStore, taskStore types.TaskStore) *Service {
+	return &Service{store, taskStore}
 }
 
 func (s *Service) RegisterRoutes(api *echo.Group) {
@@ -29,6 +30,7 @@ func (s *Service) RegisterRoutes(api *echo.Group) {
 
 func (s *Service) handleCreateAnswer(c echo.Context) error {
 	user := c.Get("user").(types.User)
+
 	userID, err := primitive.ObjectIDFromHex(user.ID)
 	if err != nil {
 		return err
@@ -39,14 +41,14 @@ func (s *Service) handleCreateAnswer(c echo.Context) error {
 		return err
 	}
 
-	taskID, err := primitive.ObjectIDFromHex(answerInput.TaskID)
+	task, err := s.taskStore.GetTaskByID(context.Background(), answerInput.TaskID)
 	if err != nil {
 		return err
 	}
 
 	answer := &types.AnswerCreateReq{
 		Body:      answerInput.Body,
-		TaskID:    taskID,
+		TaskID:    task.ID,
 		UserID:    userID,
 		CreatedAt: time.Now(),
 	}
@@ -54,6 +56,7 @@ func (s *Service) handleCreateAnswer(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
 	return c.JSON(http.StatusCreated, echo.Map{
 		"msg":       "answer created successfully",
 		"answer_id": answerID.Hex(),

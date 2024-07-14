@@ -11,12 +11,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db, err := NewMongoDBStorage(config.MongoDBURI)
+	client, err := NewMongoDBStorage(config.MongoDBURI)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	server := NewAPIServer(config, db)
+	server := NewAPIServer(config, client)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}

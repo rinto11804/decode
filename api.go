@@ -15,14 +15,14 @@ import (
 )
 
 type APIServer struct {
-	config *config.Config
-	db     *mongo.Client
+	config   *config.Config
+	dbClient *mongo.Client
 }
 
-func NewAPIServer(config *config.Config, db *mongo.Client) *APIServer {
+func NewAPIServer(config *config.Config, client *mongo.Client) *APIServer {
 	return &APIServer{
-		config: config,
-		db:     db,
+		config:   config,
+		dbClient: client,
 	}
 }
 
@@ -30,11 +30,14 @@ func (s *APIServer) Run() error {
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.Logger())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+	}))
 	api := e.Group("/api/v1")
 
 	api.GET("/healthcheck", healthCheck)
 
-	userStore := user.NewStore(s.db)
+	userStore := user.NewStore(s.dbClient)
 	userService := user.NewService(userStore, s.config)
 	userService.RegisterRoutes(api)
 
@@ -43,16 +46,16 @@ func (s *APIServer) Run() error {
 	protected := api.Group("/decode", authService.AuthMiddleware)
 	protected.GET("/authstatus", authCheck)
 
-	roomStore := room.NewStore(s.db)
+	roomStore := room.NewStore(s.dbClient)
 	roomService := room.NewService(roomStore)
 	roomService.RegisterRoutes(protected)
 
-	taskStore := task.NewStore(s.db)
+	taskStore := task.NewStore(s.dbClient)
 	taskService := task.NewService(taskStore, roomStore)
 	taskService.RegisterRoutes(protected)
 
-	answerStore := answer.NewStore(s.db)
-	answerService := answer.NewService(answerStore)
+	answerStore := answer.NewStore(s.dbClient)
+	answerService := answer.NewService(answerStore, taskStore)
 	answerService.RegisterRoutes(protected)
 
 	if err := e.Start(s.config.Port); err != nil {
@@ -63,7 +66,7 @@ func (s *APIServer) Run() error {
 
 func healthCheck(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
-		"Server status": "Still alive",
+		"msg": "Still alive",
 	})
 }
 

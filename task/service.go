@@ -12,6 +12,7 @@ import (
 
 var (
 	ErrTaskCreateBodyParse = errors.New("error in parsing create task body")
+	ErrInvalidRoomID       = errors.New("invalid room id provided")
 )
 
 type Service struct {
@@ -33,6 +34,7 @@ func NewService(store types.TaskStore, roomSore types.RoomStore) *Service {
 
 func (s *Service) RegisterRoutes(group *echo.Group) {
 	group.POST("/task", s.handleCreateTask)
+	group.GET("/task/:roomId", s.handleGetAllTaskByRoomID)
 }
 
 func (s *Service) handleCreateTask(c echo.Context) error {
@@ -63,5 +65,27 @@ func (s *Service) handleCreateTask(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{
 		"msg":     "task created successfully",
 		"task_id": id.Hex(),
+	})
+}
+
+func (s *Service) handleGetAllTaskByRoomID(c echo.Context) error {
+	roomID := c.Param("roomId")
+	if roomID == "" {
+		return ErrInvalidRoomID
+	}
+
+	_, err := s.roomStore.GetRoomByID(context.Background(), roomID)
+	if err != nil {
+		return err
+	}
+
+	tasks, err := s.store.GetAllTaskByRoomID(context.Background(), roomID)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"msg":   "task found",
+		"tasks": tasks,
 	})
 }

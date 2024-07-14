@@ -13,7 +13,8 @@ var (
 )
 
 var (
-	ErrUserNotFound = errors.New("user not found")
+	ErrUserNotFound   = errors.New("user not found")
+	ErrNotImplemented = errors.New("todo:service not implemented")
 )
 
 type Role string
@@ -49,12 +50,12 @@ type RoomModel struct {
 
 type TaskModel struct {
 	ID          primitive.ObjectID `bson:"_id" json:"id"`
-	Title       string             `bson:"title" json:"title"`
-	Description string             `bson:"description" json:"description"`
-	Handler     string             `bson:"handler" json:"handler"`
-	Body        string             `bson:"body" json:"body"`
-	RoomID      primitive.ObjectID `bson:"room_id" json:"room_id"`
-	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+	Title       string             `bson:"title" json:"title,omitempty"`
+	Description string             `bson:"description" json:"description,omitempty"`
+	Handler     string             `bson:"handler" json:"handler,omitempty"`
+	Body        string             `bson:"body" json:"body,omitempty"`
+	RoomID      primitive.ObjectID `bson:"room_id" json:"room_id,omitempty"`
+	CreatedAt   time.Time          `bson:"created_at" json:"created_at,omitempty"`
 }
 
 type AnswerModel struct {
@@ -73,11 +74,14 @@ type UserStore interface {
 
 type TaskStore interface {
 	CreateTask(context.Context, *TaskCreateReq) (primitive.ObjectID, error)
+	GetTaskByID(ctx context.Context, id string) (*TaskModel, error)
+	GetAllTaskByRoomID(ctx context.Context, roomID string) ([]TaskModel, error)
 }
 
 type RoomStore interface {
 	CreateRoom(context.Context, *RoomCreateReq) (primitive.ObjectID, error)
 	GetRoomByID(ctx context.Context, id string) (*RoomModel, error)
+	GetAllRoomByUserID(ctx context.Context, userID primitive.ObjectID) ([]RoomModel, error)
 }
 
 type AnswerStore interface {
