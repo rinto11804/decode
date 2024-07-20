@@ -4,6 +4,7 @@ import (
 	"context"
 	"decode/types"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -35,6 +36,7 @@ func NewService(store types.TaskStore, roomSore types.RoomStore) *Service {
 func (s *Service) RegisterRoutes(group *echo.Group) {
 	group.POST("/task", s.handleCreateTask)
 	group.GET("/task/:roomId", s.handleGetAllTaskByRoomID)
+	group.GET("/task/:taskId", s.GetTaskDetails)
 }
 
 func (s *Service) handleCreateTask(c echo.Context) error {
@@ -87,5 +89,34 @@ func (s *Service) handleGetAllTaskByRoomID(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"msg":   "task found",
 		"tasks": tasks,
+	})
+}
+
+// @Summary			Get Task Details
+// @Description		get task details by taskId
+// @Tags			Task
+// @ID				get-task-details-by-id
+// @Accept			json
+// @Produce			json
+// @Param			taskId	path		string	true	"Task ID"
+// @Success			200		{object}	types.Response[types.TaskModel]
+// @Router			/decode/task/{taskId} [get]
+// @Security		Bearer
+func (s *Service) GetTaskDetails(c echo.Context) error {
+	taskID := c.Param("taskId")
+	fmt.Println(taskID)
+	if taskID == "" {
+		return ErrInvalidRoomID
+	}
+
+	task, err := s.store.GetTaskByID(context.Background(), taskID)
+	fmt.Println(task)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"msg":  "task found",
+		"task": task,
 	})
 }

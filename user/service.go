@@ -80,6 +80,13 @@ func (s *Service) handleRegister(c echo.Context) error {
 	})
 }
 
+// @Summary		User login
+// @Description	Authenticate a user and return a JWT token
+// @Tags			User
+// @Accept			json
+// @Produce		json
+// @Param			loginInput	body	LoginReq	true	"Login credentials"
+// @Router			/login [post]
 func (s *Service) handleLogin(c echo.Context) error {
 	var loginInput LoginReq
 

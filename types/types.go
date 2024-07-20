@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -24,6 +25,12 @@ const (
 	ADMIN Role = "ADMIN"
 	GUEST Role = "GUEST"
 )
+
+type ResponseErr = echo.HTTPError
+type Response[T any] struct {
+	Msg  string `json:"msg"`
+	Data T      `json:"data"`
+}
 
 type User struct {
 	ID   string `json:"id"`
@@ -46,6 +53,14 @@ type RoomModel struct {
 	Description string             `bson:"description" json:"description"`
 	UserID      primitive.ObjectID `bson:"user_id" json:"user_id"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+}
+
+type RoomJoinlistModel struct {
+	ID        primitive.ObjectID `bson:"_id" json:"id"`
+	RoomID    primitive.ObjectID `bson:"room_id" json:"room_id"`
+	UserID    primitive.ObjectID `bson:"user_id" json:"user_id"`
+	Points    int                `bson:"points" json:"points"`
+	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 }
 
 type TaskModel struct {
@@ -84,9 +99,15 @@ type RoomStore interface {
 	GetAllRoomByUserID(ctx context.Context, userID primitive.ObjectID) ([]RoomModel, error)
 }
 
+type JoinlistStore interface {
+	CreateJoinlist(context.Context, RoomJoinlistReq) (primitive.ObjectID, error)
+}
+
 type AnswerStore interface {
 	CreateAnswer(context.Context, *AnswerCreateReq) (primitive.ObjectID, error)
 }
+
+type SubRoute = func(api *echo.Group)
 
 type UserCreateReq struct {
 	Name      string    `bson:"name" json:"name"`
@@ -102,6 +123,13 @@ type RoomCreateReq struct {
 	Description string             `bson:"description" json:"description"`
 	UserID      primitive.ObjectID `bson:"user_id" json:"user_id"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+}
+
+type RoomJoinlistReq struct {
+	RoomID    primitive.ObjectID `bson:"room_id" json:"room_id"`
+	UserID    primitive.ObjectID `bson:"user_id" json:"user_id"`
+	Points    int                `bson:"points" json:"points"`
+	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 }
 
 type TaskCreateReq struct {

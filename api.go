@@ -3,14 +3,18 @@ package main
 import (
 	"decode/config"
 	"decode/room"
+	"decode/room/joinlist"
 	"decode/task"
 	"decode/task/answer"
 	"decode/user"
 	"decode/user/auth"
 	"net/http"
 
+	_ "decode/docs"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -34,6 +38,7 @@ func (s *APIServer) Run() error {
 		AllowOrigins: []string{"*"},
 	}))
 	api := e.Group("/api/v1")
+	api.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	api.GET("/healthcheck", healthCheck)
 
@@ -49,6 +54,10 @@ func (s *APIServer) Run() error {
 	roomStore := room.NewStore(s.dbClient)
 	roomService := room.NewService(roomStore)
 	roomService.RegisterRoutes(protected)
+
+	joinListStore := joinlist.NewStore(s.dbClient)
+	joinListService := joinlist.NewService(joinListStore, roomStore)
+	joinListService.RegisterRoutes(protected)
 
 	taskStore := task.NewStore(s.dbClient)
 	taskService := task.NewService(taskStore, roomStore)

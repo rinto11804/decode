@@ -29,6 +29,9 @@ func NewService(cfg *config.Config, userStore types.UserStore) *Service {
 func (s Service) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		header := strings.Split(c.Request().Header.Get("Authorization"), " ")
+		if len(header) != 2 || header[0] != "Bearer" {
+			return ErrTokenNotValid
+		}
 		token, err := s.validateToken(header[1])
 		if err != nil {
 			return err
