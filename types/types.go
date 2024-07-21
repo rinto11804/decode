@@ -101,6 +101,7 @@ type RoomStore interface {
 
 type JoinlistStore interface {
 	CreateJoinlist(context.Context, RoomJoinlistReq) (primitive.ObjectID, error)
+	GenerateLeaderBoard(ctx context.Context, roomID string) ([]LeaderBoardItems, error)
 }
 
 type AnswerStore interface {
@@ -146,4 +147,11 @@ type AnswerCreateReq struct {
 	TaskID    primitive.ObjectID `bson:"task_id" json:"task_id"`
 	UserID    primitive.ObjectID `bson:"user_id" json:"user_id"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
+}
+
+type LeaderBoardItems struct {
+	ID       primitive.ObjectID `bson:"_id" json:"_id"`
+	UserID   primitive.ObjectID `bson:"user_id" json:"user_id"`
+	UserName string             `bson:"username" json:"username"`
+	Points   int                `bson:"points" json:"points"`
 }

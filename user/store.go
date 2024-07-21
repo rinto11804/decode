@@ -60,3 +60,18 @@ func (s *Store) GetUserByID(ctx context.Context, id string) (*types.UserModel, e
 	}
 	return user, nil
 }
+
+// func (s *Store) GetUserByIDs(ctx context.Context, ids []primitive.ObjectID) ([]types.UserModel, error) {
+// 	var users []types.UserModel
+// 	coll := s.db.Collection(collName)
+// 	cursor, err := coll.Find(ctx, bson.M{"_id": ids}, &options.FindOptions{
+// 		Projection: bson.M{"_id": 1, "name": 1},
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if err := cursor.All(ctx, &users); err != nil {
+// 		return nil, err
+// 	}
+// 	return users, nil
+// }
