@@ -90,7 +90,7 @@ type UserStore interface {
 type TaskStore interface {
 	CreateTask(context.Context, *TaskCreateReq) (primitive.ObjectID, error)
 	GetTaskByID(ctx context.Context, id string) (*TaskModel, error)
-	GetAllTaskByRoomID(ctx context.Context, roomID string) ([]TaskModel, error)
+	GetAllTaskByRoomID(ctx context.Context, roomID string) ([]ProjectedTask, error)
 }
 
 type RoomStore interface {
@@ -146,6 +146,13 @@ type AnswerCreateReq struct {
 	Body      string             `bson:"body" json:"body"`
 	TaskID    primitive.ObjectID `bson:"task_id" json:"task_id"`
 	UserID    primitive.ObjectID `bson:"user_id" json:"user_id"`
+	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
+}
+
+type ProjectedTask struct {
+	ID        primitive.ObjectID `bson:"_id" json:"id"`
+	Title     string             `bson:"title" json:"title"`
+	Handler   string             `bson:"handler" json:"handler"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 }
 

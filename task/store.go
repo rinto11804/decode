@@ -41,18 +41,19 @@ func (s Store) GetTaskByID(ctx context.Context, id string) (*types.TaskModel, er
 	return &task, nil
 }
 
-func (s Store) GetAllTaskByRoomID(ctx context.Context, roomID string) ([]types.TaskModel, error) {
-	var tasks []types.TaskModel
+func (s Store) GetAllTaskByRoomID(ctx context.Context, roomID string) ([]types.ProjectedTask, error) {
+	var tasks []types.ProjectedTask
 	id, err := primitive.ObjectIDFromHex(roomID)
 	if err != nil {
 		return nil, err
 	}
-	couser, err := s.db.Collection(collName).Find(ctx, bson.M{"room_id": id}, &options.FindOptions{
-		Projection: bson.M{"_id": 1, "title": 1, "handler": 1},
-	})
+
+	opts := options.Find().SetProjection(bson.M{"_id": 1, "title": 1, "handler": 1, "created_at": 1})
+	couser, err := s.db.Collection(collName).Find(ctx, bson.M{"room_id": id}, opts)
 	if err != nil {
 		return nil, err
 	}
+	defer couser.Close(ctx)
 	if err := couser.All(ctx, &tasks); err != nil {
 		return nil, err
 	}

@@ -5,7 +5,6 @@ import (
 	"decode/config"
 	"decode/types"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/golang-jwt/jwt"
@@ -48,7 +47,6 @@ func (s Service) AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return echo.ErrUnauthorized
 		}
 		c.Set("user", types.User{ID: user.ID.Hex(), Role: user.Role})
-		fmt.Println(user)
 		return next(c)
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"decode/types"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -35,7 +34,7 @@ func NewService(store types.TaskStore, roomSore types.RoomStore) *Service {
 
 func (s *Service) RegisterRoutes(group *echo.Group) {
 	group.POST("/task", s.handleCreateTask)
-	group.GET("/task/:roomId", s.handleGetAllTaskByRoomID)
+	group.GET("/task/room/:roomId", s.handleGetAllTaskByRoomID)
 	group.GET("/task/:taskId", s.GetTaskDetails)
 }
 
@@ -104,13 +103,11 @@ func (s *Service) handleGetAllTaskByRoomID(c echo.Context) error {
 // @Security		Bearer
 func (s *Service) GetTaskDetails(c echo.Context) error {
 	taskID := c.Param("taskId")
-	fmt.Println(taskID)
 	if taskID == "" {
 		return ErrInvalidRoomID
 	}
 
 	task, err := s.store.GetTaskByID(context.Background(), taskID)
-	fmt.Println(task)
 	if err != nil {
 		return err
 	}

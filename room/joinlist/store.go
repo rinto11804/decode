@@ -3,7 +3,6 @@ package joinlist
 import (
 	"context"
 	"decode/types"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -40,7 +39,6 @@ func (s *Store) GenerateLeaderBoard(ctx context.Context, roomID string) ([]types
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(ID)
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{"room_id": ID}}},
 		{{Key: "$lookup", Value: bson.M{
@@ -64,9 +62,10 @@ func (s *Store) GenerateLeaderBoard(ctx context.Context, roomID string) ([]types
 		return nil, err
 	}
 
+	defer cursor.Close(ctx)
+
 	if err := cursor.All(ctx, &leaderboardItems); err != nil {
 		return nil, err
 	}
-	fmt.Println(leaderboardItems)
 	return leaderboardItems, nil
 }
