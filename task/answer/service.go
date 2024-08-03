@@ -28,6 +28,16 @@ func (s *Service) RegisterRoutes(api *echo.Group) {
 	api.POST("/answer", s.handleCreateAnswer)
 }
 
+// @Summary			Create Answer
+// @Description		create the answer for a task
+// @Tags			Answer
+// @ID				create-answer
+// @Accept			json
+// @Produce			json
+// @Param			answerInput	body	AnswerCreateBody	true	"create answer request input"
+// @Success			200		{object}	types.Response[string] 	"answerId"
+// @Router			/decode/answer [post]
+// @Security		Bearer
 func (s *Service) handleCreateAnswer(c echo.Context) error {
 	user := c.Get("user").(types.User)
 
@@ -57,8 +67,8 @@ func (s *Service) handleCreateAnswer(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{
-		"msg":       "answer created successfully",
-		"answer_id": answerID.Hex(),
+	return c.JSON(http.StatusCreated, types.Response[string]{
+		Msg:  "answer created",
+		Data: answerID.Hex(),
 	})
 }

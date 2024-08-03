@@ -24,6 +24,46 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/decode/answer": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create the answer for a task",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Answer"
+                ],
+                "summary": "Create Answer",
+                "operationId": "create-answer",
+                "parameters": [
+                    {
+                        "description": "create answer request input",
+                        "name": "answerInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/answer.AnswerCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "answerId",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-string"
+                        }
+                    }
+                }
+            }
+        },
         "/decode/join/{roomId}": {
             "post": {
                 "security": [
@@ -57,6 +97,151 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.Response-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/decode/room": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get rooms joined by current login user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Room"
+                ],
+                "summary": "Get all room of current user",
+                "operationId": "get-all-rooms-by-login-user",
+                "responses": {
+                    "200": {
+                        "description": "rooms",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-array_types_RoomModel"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create the room",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Room"
+                ],
+                "summary": "Create Room",
+                "operationId": "create-room",
+                "parameters": [
+                    {
+                        "description": "room create request body",
+                        "name": "roomInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/room.RoomCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "roomId",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/decode/task": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "create task for a room",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task"
+                ],
+                "summary": "Create Task",
+                "operationId": "create-task",
+                "parameters": [
+                    {
+                        "description": "create task request body",
+                        "name": "taskInput",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/task.TaskCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "taskId",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/decode/task/room/{roomId}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get all task by roomId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task"
+                ],
+                "summary": "Get all task in a room",
+                "operationId": "get-all-task-by-roomId",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "roomId",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "tasks",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-array_types_ProjectedTask"
                         }
                     }
                 }
@@ -100,6 +285,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/leaderboard{roomId}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "get leaderboard of a roomId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Room"
+                ],
+                "summary": "Get Leaderboard",
+                "operationId": "get-leaderboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-array_types_LeaderBoardItems"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Authenticate a user and return a JWT token",
@@ -124,18 +347,188 @@ const docTemplate = `{
                         }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "token and user",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-user_LoginRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/register/": {
+            "post": {
+                "description": "Create new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create User",
+                "parameters": [
+                    {
+                        "description": "Register user request body",
+                        "name": "register-request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.RegisterReq"
+                        }
+                    },
+                    {
+                        "enum": [
+                            "USER",
+                            "ADMIN",
+                            "GUEST"
+                        ],
+                        "type": "string",
+                        "description": "user role",
+                        "name": "role",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "userid",
+                        "schema": {
+                            "$ref": "#/definitions/types.Response-string"
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
+        "answer.AnswerCreateBody": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "room.RoomCreateBody": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "task.TaskCreateBody": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "handler": {
+                    "type": "string"
+                },
+                "room_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.LeaderBoardItems": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.ProjectedTask": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "handler": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Response-array_types_LeaderBoardItems": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.LeaderBoardItems"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Response-array_types_ProjectedTask": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ProjectedTask"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Response-array_types_RoomModel": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.RoomModel"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "types.Response-string": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "string"
                 },
-                "msg": {
+                "message": {
                     "type": "string"
                 }
             }
@@ -146,7 +539,51 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/types.TaskModel"
                 },
-                "msg": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Response-user_LoginRes": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/user.LoginRes"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Role": {
+            "type": "string",
+            "enum": [
+                "USER",
+                "ADMIN",
+                "GUEST"
+            ],
+            "x-enum-varnames": [
+                "USER",
+                "ADMIN",
+                "GUEST"
+            ]
+        },
+        "types.RoomModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -169,6 +606,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "point": {
+                    "type": "integer"
+                },
                 "room_id": {
                     "type": "string"
                 },
@@ -177,10 +617,58 @@ const docTemplate = `{
                 }
             }
         },
+        "types.UserModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "points": {
+                    "type": "integer"
+                },
+                "role": {
+                    "$ref": "#/definitions/types.Role"
+                }
+            }
+        },
         "user.LoginReq": {
             "type": "object",
             "properties": {
                 "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.LoginRes": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/types.UserModel"
+                }
+            }
+        },
+        "user.RegisterReq": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "password": {

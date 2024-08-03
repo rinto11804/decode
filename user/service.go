@@ -34,6 +34,11 @@ type LoginReq struct {
 	Password string `json:"password"`
 }
 
+type LoginRes struct {
+	Token string           `json:"token"`
+	User  *types.UserModel `json:"user"`
+}
+
 func NewService(store types.UserStore, config *config.Config) *Service {
 	return &Service{config, store}
 }
@@ -43,6 +48,15 @@ func (s *Service) RegisterRoutes(api *echo.Group) {
 	api.POST("/login", s.handleLogin)
 }
 
+// @Summary			Create User
+// @Description		Create new user
+// @Tags			User
+// @Accept			json
+// @Produce			json
+// @Param			register-request	body	RegisterReq	true	"Register user request body"
+// @Param			role query	types.Role false	"user role"
+// @Success			200		{object}	types.Response[string] "userid"
+// @Router			/register/ [post]
 func (s *Service) handleRegister(c echo.Context) error {
 	var userInput RegisterReq
 	role := util.GetRole(c.Param("role"))
@@ -74,18 +88,19 @@ func (s *Service) handleRegister(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{
-		"msg":     "user created successfully",
-		"user_id": userId.Hex(),
+	return c.JSON(http.StatusCreated, types.Response[string]{
+		Msg:  "user created",
+		Data: userId.Hex(),
 	})
 }
 
-// @Summary		User login
-// @Description	Authenticate a user and return a JWT token
+// @Summary			User login
+// @Description		Authenticate a user and return a JWT token
 // @Tags			User
 // @Accept			json
-// @Produce		json
+// @Produce			json
 // @Param			loginInput	body	LoginReq	true	"Login credentials"
+// @Success			200		{object}	types.Response[LoginRes] "token and user"
 // @Router			/login [post]
 func (s *Service) handleLogin(c echo.Context) error {
 	var loginInput LoginReq
@@ -117,11 +132,15 @@ func (s *Service) handleLogin(c echo.Context) error {
 		HttpOnly: false,
 	})
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"token": token,
-		"user":  user,
+	return c.JSON(http.StatusOK, types.Response[LoginRes]{
+		Msg: "user login successfull",
+		Data: LoginRes{
+			Token: token,
+			User:  user,
+		},
 	})
 }
+
 func (s Service) CreateJWTToken(id string, role types.Role) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": id,

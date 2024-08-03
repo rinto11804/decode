@@ -26,9 +26,13 @@ const (
 	GUEST Role = "GUEST"
 )
 
-type ResponseErr = echo.HTTPError
+type ResponseErr struct {
+	Msg   string `json:"message"`
+	Error string `json:"error"`
+}
+
 type Response[T any] struct {
-	Msg  string `json:"msg"`
+	Msg  string `json:"message"`
 	Data T      `json:"data"`
 }
 
@@ -69,6 +73,7 @@ type TaskModel struct {
 	Description string             `bson:"description" json:"description,omitempty"`
 	Handler     string             `bson:"handler" json:"handler,omitempty"`
 	Body        string             `bson:"body" json:"body,omitempty"`
+	Point       int                `bson:"point" json:"point,omitempty"`
 	RoomID      primitive.ObjectID `bson:"room_id" json:"room_id,omitempty"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at,omitempty"`
 }
@@ -78,6 +83,7 @@ type AnswerModel struct {
 	Body      string             `bson:"body" json:"body"`
 	TaskID    primitive.ObjectID `bson:"task_id" json:"task_id"`
 	UserID    primitive.ObjectID `bson:"user_id" json:"user_id"`
+	IsCorrect bool               `bson:"is_correct" json:"is_correct"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 }
 
@@ -106,6 +112,7 @@ type JoinlistStore interface {
 
 type AnswerStore interface {
 	CreateAnswer(context.Context, *AnswerCreateReq) (primitive.ObjectID, error)
+	MarkAsCorrect(ctx context.Context, id string) error
 }
 
 type SubRoute = func(api *echo.Group)
@@ -139,6 +146,7 @@ type TaskCreateReq struct {
 	Handler     string             `bson:"handler" json:"handler"`
 	Body        string             `bson:"body" json:"body"`
 	RoomID      primitive.ObjectID `bson:"room_id" json:"room_id"`
+	Point       int                `bson:"point" json:"point,omitempty"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 }
 

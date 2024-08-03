@@ -1,17 +1,123 @@
 basePath: /api/v1
 definitions:
+  answer.AnswerCreateBody:
+    properties:
+      body:
+        type: string
+      task_id:
+        type: string
+    type: object
+  room.RoomCreateBody:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+  task.TaskCreateBody:
+    properties:
+      body:
+        type: string
+      description:
+        type: string
+      handler:
+        type: string
+      room_id:
+        type: string
+      title:
+        type: string
+    type: object
+  types.LeaderBoardItems:
+    properties:
+      _id:
+        type: string
+      points:
+        type: integer
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  types.ProjectedTask:
+    properties:
+      created_at:
+        type: string
+      handler:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  types.Response-array_types_LeaderBoardItems:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/types.LeaderBoardItems'
+        type: array
+      message:
+        type: string
+    type: object
+  types.Response-array_types_ProjectedTask:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/types.ProjectedTask'
+        type: array
+      message:
+        type: string
+    type: object
+  types.Response-array_types_RoomModel:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/types.RoomModel'
+        type: array
+      message:
+        type: string
+    type: object
   types.Response-string:
     properties:
       data:
         type: string
-      msg:
+      message:
         type: string
     type: object
   types.Response-types_TaskModel:
     properties:
       data:
         $ref: '#/definitions/types.TaskModel'
-      msg:
+      message:
+        type: string
+    type: object
+  types.Response-user_LoginRes:
+    properties:
+      data:
+        $ref: '#/definitions/user.LoginRes'
+      message:
+        type: string
+    type: object
+  types.Role:
+    enum:
+    - USER
+    - ADMIN
+    - GUEST
+    type: string
+    x-enum-varnames:
+    - USER
+    - ADMIN
+    - GUEST
+  types.RoomModel:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      user_id:
         type: string
     type: object
   types.TaskModel:
@@ -26,14 +132,47 @@ definitions:
         type: string
       id:
         type: string
+      point:
+        type: integer
       room_id:
         type: string
       title:
         type: string
     type: object
+  types.UserModel:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      points:
+        type: integer
+      role:
+        $ref: '#/definitions/types.Role'
+    type: object
   user.LoginReq:
     properties:
       email:
+        type: string
+      password:
+        type: string
+    type: object
+  user.LoginRes:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/types.UserModel'
+    type: object
+  user.RegisterReq:
+    properties:
+      email:
+        type: string
+      name:
         type: string
       password:
         type: string
@@ -55,6 +194,31 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /decode/answer:
+    post:
+      consumes:
+      - application/json
+      description: create the answer for a task
+      operationId: create-answer
+      parameters:
+      - description: create answer request input
+        in: body
+        name: answerInput
+        required: true
+        schema:
+          $ref: '#/definitions/answer.AnswerCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: answerId
+          schema:
+            $ref: '#/definitions/types.Response-string'
+      security:
+      - Bearer: []
+      summary: Create Answer
+      tags:
+      - Answer
   /decode/join/{roomId}:
     post:
       consumes:
@@ -79,6 +243,73 @@ paths:
       summary: Join Room
       tags:
       - Room
+  /decode/room:
+    get:
+      consumes:
+      - application/json
+      description: get rooms joined by current login user
+      operationId: get-all-rooms-by-login-user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: rooms
+          schema:
+            $ref: '#/definitions/types.Response-array_types_RoomModel'
+      security:
+      - Bearer: []
+      summary: Get all room of current user
+      tags:
+      - Room
+    post:
+      consumes:
+      - application/json
+      description: create the room
+      operationId: create-room
+      parameters:
+      - description: room create request body
+        in: body
+        name: roomInput
+        required: true
+        schema:
+          $ref: '#/definitions/room.RoomCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: roomId
+          schema:
+            $ref: '#/definitions/types.Response-string'
+      security:
+      - Bearer: []
+      summary: Create Room
+      tags:
+      - Room
+  /decode/task:
+    post:
+      consumes:
+      - application/json
+      description: create task for a room
+      operationId: create-task
+      parameters:
+      - description: create task request body
+        in: body
+        name: taskInput
+        required: true
+        schema:
+          $ref: '#/definitions/task.TaskCreateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: taskId
+          schema:
+            $ref: '#/definitions/types.Response-string'
+      security:
+      - Bearer: []
+      summary: Create Task
+      tags:
+      - Task
   /decode/task/{taskId}:
     get:
       consumes:
@@ -103,6 +334,54 @@ paths:
       summary: Get Task Details
       tags:
       - Task
+  /decode/task/room/{roomId}:
+    get:
+      consumes:
+      - application/json
+      description: get all task by roomId
+      operationId: get-all-task-by-roomId
+      parameters:
+      - description: roomId
+        in: path
+        name: roomId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: tasks
+          schema:
+            $ref: '#/definitions/types.Response-array_types_ProjectedTask'
+      security:
+      - Bearer: []
+      summary: Get all task in a room
+      tags:
+      - Task
+  /leaderboard{roomId}:
+    post:
+      consumes:
+      - application/json
+      description: get leaderboard of a roomId
+      operationId: get-leaderboard
+      parameters:
+      - description: Room ID
+        in: path
+        name: roomId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Response-array_types_LeaderBoardItems'
+      security:
+      - Bearer: []
+      summary: Get Leaderboard
+      tags:
+      - Room
   /login:
     post:
       consumes:
@@ -117,8 +396,42 @@ paths:
           $ref: '#/definitions/user.LoginReq'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: token and user
+          schema:
+            $ref: '#/definitions/types.Response-user_LoginRes'
       summary: User login
+      tags:
+      - User
+  /register/:
+    post:
+      consumes:
+      - application/json
+      description: Create new user
+      parameters:
+      - description: Register user request body
+        in: body
+        name: register-request
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterReq'
+      - description: user role
+        enum:
+        - USER
+        - ADMIN
+        - GUEST
+        in: query
+        name: role
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: userid
+          schema:
+            $ref: '#/definitions/types.Response-string'
+      summary: Create User
       tags:
       - User
 securityDefinitions:

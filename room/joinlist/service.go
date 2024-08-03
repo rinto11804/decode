@@ -65,6 +65,16 @@ func (s *Service) handleJoinRoom(c echo.Context) error {
 	})
 }
 
+// @Summary			Get Leaderboard
+// @Description		get leaderboard of a roomId
+// @Tags			Room
+// @ID				get-leaderboard
+// @Accept			json
+// @Produce			json
+// @Param			roomId	path		string	true	"Room ID"
+// @Success			200		{object}	types.Response[[]types.LeaderBoardItems]
+// @Router			/leaderboard{roomId} [post]
+// @Security		Bearer
 func (s *Service) handleGetLeaderBoard(c echo.Context) error {
 	roomID := c.Param("roomId")
 	if roomID == "" {

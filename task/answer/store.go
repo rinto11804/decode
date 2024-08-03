@@ -40,5 +40,8 @@ func (s *Store) GetTaskByID(ctx context.Context, id string) (*types.TaskModel, e
 	}
 
 	return &task, nil
+}
 
+func (s *Store) MarkAsCorrect(ctx context.Context, id string) error {
+	return types.ErrNotImplemented
 }

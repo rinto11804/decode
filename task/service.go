@@ -20,7 +20,7 @@ type Service struct {
 	roomStore types.RoomStore
 }
 
-type taskCreateBody struct {
+type TaskCreateBody struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Handler     string `json:"handler"`
@@ -38,8 +38,18 @@ func (s *Service) RegisterRoutes(group *echo.Group) {
 	group.GET("/task/:taskId", s.GetTaskDetails)
 }
 
+// @Summary			Create Task
+// @Description		create task for a room
+// @Tags			Task
+// @ID				create-task
+// @Accept			json
+// @Produce			json
+// @Param			taskInput	body	TaskCreateBody	true	"create task request body"
+// @Success			200		{object}	types.Response[string] 	"taskId"
+// @Router			/decode/task [post]
+// @Security		Bearer
 func (s *Service) handleCreateTask(c echo.Context) error {
-	var taskInput taskCreateBody
+	var taskInput TaskCreateBody
 	if err := c.Bind(&taskInput); err != nil {
 		return err
 	}
@@ -63,12 +73,22 @@ func (s *Service) handleCreateTask(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{
-		"msg":     "task created successfully",
-		"task_id": id.Hex(),
+	return c.JSON(http.StatusCreated, types.Response[string]{
+		Msg:  "task created",
+		Data: id.Hex(),
 	})
 }
 
+// @Summary			Get all task in a room
+// @Description		get all task by roomId
+// @Tags			Task
+// @ID				get-all-task-by-roomId
+// @Accept			json
+// @Produce			json
+// @Param			roomId	path	string	true	"roomId"
+// @Success			200		{object}	types.Response[[]types.ProjectedTask] 	"tasks"
+// @Router			/decode/task/room/{roomId} [get]
+// @Security		Bearer
 func (s *Service) handleGetAllTaskByRoomID(c echo.Context) error {
 	roomID := c.Param("roomId")
 	if roomID == "" {
@@ -85,9 +105,9 @@ func (s *Service) handleGetAllTaskByRoomID(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"msg":   "task found",
-		"tasks": tasks,
+	return c.JSON(http.StatusOK, types.Response[[]types.ProjectedTask]{
+		Msg:  "tasks found",
+		Data: tasks,
 	})
 }
 
@@ -112,8 +132,8 @@ func (s *Service) GetTaskDetails(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"msg":  "task found",
-		"task": task,
+	return c.JSON(http.StatusOK, types.Response[types.TaskModel]{
+		Msg:  "task found",
+		Data: *task,
 	})
 }

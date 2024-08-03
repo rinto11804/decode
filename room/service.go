@@ -33,6 +33,16 @@ func (s *Service) RegisterRoutes(api *echo.Group) {
 	api.GET("/room", s.handleGetAllRoomsByUserID)
 }
 
+// @Summary			Create Room
+// @Description		create the room
+// @Tags			Room
+// @ID				create-room
+// @Accept			json
+// @Produce			json
+// @Param			roomInput	body	RoomCreateBody	true	"room create request body"
+// @Success			200		{object}	types.Response[string] 	"roomId"
+// @Router			/decode/room [post]
+// @Security		Bearer
 func (s *Service) handleCreateRoom(c echo.Context) error {
 	user := c.Get("user").(types.User)
 	userID, err := primitive.ObjectIDFromHex(user.ID)
@@ -57,12 +67,21 @@ func (s *Service) handleCreateRoom(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{
-		"msg":     "room created successfully",
-		"room_id": roomID.Hex(),
+	return c.JSON(http.StatusCreated, types.Response[string]{
+		Msg:  "room created successfully",
+		Data: roomID.Hex(),
 	})
 }
 
+// @Summary			Get all room of current user
+// @Description		get rooms joined by current login user
+// @Tags			Room
+// @ID				get-all-rooms-by-login-user
+// @Accept			json
+// @Produce			json
+// @Success			200		{object}	types.Response[[]types.RoomModel] 	"rooms"
+// @Router			/decode/room [get]
+// @Security		Bearer
 func (s *Service) handleGetAllRoomsByUserID(c echo.Context) error {
 	user := c.Get("user").(types.User)
 	userID, err := primitive.ObjectIDFromHex(user.ID)
@@ -75,8 +94,8 @@ func (s *Service) handleGetAllRoomsByUserID(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"msg":   "fetch process successfull",
-		"rooms": rooms,
+	return c.JSON(http.StatusOK, types.Response[[]types.RoomModel]{
+		Msg:  "room found",
+		Data: rooms,
 	})
 }
